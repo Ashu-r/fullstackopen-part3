@@ -5,6 +5,7 @@ const morgan = require('morgan');
 const cors = require('cors');
 app.use(cors());
 const Person = require('./models/person_mongo');
+const { response } = require('express');
 
 morgan.token('personsJson', function(req) {
 	const iReturn = req.body.name ? JSON.stringify(req.body) : '';
@@ -47,7 +48,7 @@ app.get('/api/persons/:id', (req, res, next) => {
 		});
 });
 
-app.post('/api/persons', (req, res) => {
+app.post('/api/persons', (req, res, next) => {
 	const name = req.body.name;
 	const number = req.body.number;
 	if (!(name && number)) {
@@ -60,9 +61,13 @@ app.post('/api/persons', (req, res) => {
 		name: name,
 		number: number
 	});
-	person.save().then((savedContact) => {
-		res.json(savedContact);
-	});
+	person
+		.save()
+		.then((savedContact) => savedContact.toJSON())
+		.then((savedAndFormattedContact) => {
+			response.json(savedAndFormattedContact);
+		})
+		.catch((error) => next(error));
 });
 
 app.delete('/api/persons/:id', (req, res, next) => {
@@ -99,6 +104,8 @@ const errorHandler = (error, req, res, next) => {
 
 	if (error.name === 'CastError') {
 		return res.status(400).send({ error: 'malformatted id' });
+	} else if (error.name === 'ValidationError') {
+		return response.status(400).json({ error: error.message });
 	}
 
 	next(error);
