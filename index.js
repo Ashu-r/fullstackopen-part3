@@ -8,6 +8,7 @@ const cors = require('cors');
 app.use(cors());
 const Person = require('./models/person_mongo');
 
+// eslint-disable-next-line func-names
 morgan.token('personsJson', function(req) {
 	const iReturn = req.body.name ? JSON.stringify(req.body) : '';
 	return iReturn;
@@ -26,7 +27,7 @@ app.get('/api/persons', (req, res) => {
 app.get('/info', (request, response) => {
 	Person.count({}, (err, res) => {
 		if (err) {
-			console.log(err);
+			// console.log(err);
 		} else {
 			response.send(`<p>Phonebook has info for ${res} people </p>
 			<p>${new Date()}</p>`);
@@ -37,7 +38,7 @@ app.get('/info', (request, response) => {
 app.get('/api/persons/:id', (req, res, next) => {
 	Person.findById(req.params.id)
 		.then((person) => {
-			console.log('person---', person);
+			// console.log('person---', person);
 			if (person) {
 				res.json(person.toJSON());
 			} else {
@@ -88,7 +89,7 @@ app.put('/api/persons/:id', (req, res, next) => {
 	};
 	Person.findByIdAndUpdate(req.params.id, person, { new: true })
 		.then((updatedContact) => {
-			console.log(updatedContact);
+			// console.log(updatedContact);
 			res.json(updatedContact.toJSON());
 		})
 		.catch((error) => next(error));
@@ -101,7 +102,7 @@ const unknownEndpoint = (request, response) => {
 app.use(unknownEndpoint);
 
 const errorHandler = (error, req, res, next) => {
-	console.error(error.message);
+	// console.error(error.message);
 
 	if (error.name === 'CastError') {
 		return res.status(400).send({ error: 'malformatted id' });
@@ -116,5 +117,5 @@ app.use(errorHandler);
 
 const { PORT } = process.env;
 app.listen(PORT, () => {
-	console.log(`server running on port ${PORT}`);
+	// console.log(`server running on port ${PORT}`);
 });
