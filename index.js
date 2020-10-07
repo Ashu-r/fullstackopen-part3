@@ -1,11 +1,12 @@
 require('dotenv').config();
 const express = require('express');
+
 const app = express();
 const morgan = require('morgan');
 const cors = require('cors');
+
 app.use(cors());
 const Person = require('./models/person_mongo');
-const { response } = require('express');
 
 morgan.token('personsJson', function(req) {
 	const iReturn = req.body.name ? JSON.stringify(req.body) : '';
@@ -49,41 +50,41 @@ app.get('/api/persons/:id', (req, res, next) => {
 });
 
 app.post('/api/persons', (req, res, next) => {
-	const name = req.body.name;
-	const number = req.body.number;
+	const { name } = req.body;
+	const { number } = req.body;
 	if (!(name && number)) {
 		return res.status(400).json({
-			error: 'name/number missing'
+			error: 'name/number missing',
 		});
 	}
 
 	const person = new Person({
-		name: name,
-		number: number
+		name,
+		number,
 	});
 	person
 		.save()
 		.then((savedContact) => savedContact.toJSON())
 		.then((savedAndFormattedContact) => {
-			response.json(savedAndFormattedContact);
+			res.json(savedAndFormattedContact);
 		})
 		.catch((error) => next(error));
 });
 
 app.delete('/api/persons/:id', (req, res, next) => {
 	Person.findByIdAndRemove(req.params.id)
-		.then((result) => {
+		.then(() => {
 			res.status(204).end();
 		})
 		.catch((error) => next(error));
 });
 
 app.put('/api/persons/:id', (req, res, next) => {
-	const number = req.body.number;
-	const name = req.body.name;
+	const { number } = req.body;
+	const { name } = req.body;
 	const person = {
-		name: name,
-		number: number
+		name,
+		number,
 	};
 	Person.findByIdAndUpdate(req.params.id, person, { new: true })
 		.then((updatedContact) => {
@@ -104,15 +105,16 @@ const errorHandler = (error, req, res, next) => {
 
 	if (error.name === 'CastError') {
 		return res.status(400).send({ error: 'malformatted id' });
-	} else if (error.name === 'ValidationError') {
-		return response.status(400).json({ error: error.message });
+	}
+	if (error.name === 'ValidationError') {
+		return res.status(400).json({ error: error.message });
 	}
 
 	next(error);
 };
 app.use(errorHandler);
 
-const PORT = process.env.PORT;
+const { PORT } = process.env;
 app.listen(PORT, () => {
 	console.log(`server running on port ${PORT}`);
 });

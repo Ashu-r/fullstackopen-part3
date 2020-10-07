@@ -13,12 +13,12 @@ mongoose.connect(url, {
 	useNewUrlParser: true,
 	useUnifiedTopology: true,
 	useFindAndModify: false,
-	useCreateIndex: true
+	useCreateIndex: true,
 });
 
 const personSchema = new mongoose.Schema({
 	name: String,
-	number: String
+	number: String,
 });
 
 const Person = mongoose.model('Person', personSchema);
@@ -34,12 +34,12 @@ if (process.argv.length == 3) {
 } else {
 	const person = new Person({
 		name: process.argv[3],
-		number: process.argv[4]
+		number: process.argv[4],
 	});
 
 	console.log(person);
 
-	person.save().then((result) => {
+	person.save().then(() => {
 		console.log(` added ${person.name} number:${person.number} to phoebook`);
 		mongoose.connection.close();
 	});
